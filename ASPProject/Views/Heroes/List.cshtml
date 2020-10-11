@@ -1,0 +1,35 @@
+﻿@using ASPProject.ViewModels
+@using System.Linq
+<system.web.webPages.razor>
+
+    <host factoryType="System.Web.Mvc.MvcWebRazorHostFactory, System.Web.Mvc, Version=5.2.2.0, Culture=neutral, PublicKeyToken=31BF3856AD364E35" />
+    <pages pageBaseType="System.Web.Mvc.WebViewPage">
+        <namespaces>
+            <add namespace="System.Web.Configuration" />
+            <add namespace="System.Web.Mvc" />
+            <add namespace="System.Web.Mvc.Ajax" />
+            <add namespace="System.Web.Mvc.Html" />
+            <add namespace="System.Web.Routing" />
+            <add namespace="System.Linq" />
+        </namespaces>
+    </pages>
+</system.web.webPages.razor>
+<h1>Все герои</h1>
+
+<div class="row mt-5 mb-2">
+    @{foreach (var hero in Model.Heroes)
+        { 
+                   
+            <div class=" col-lg-4">
+                <img class="img-thumbnail" src=@hero.img alt=@hero.Name />
+                <h2> Герой: @hero.Name </h2>
+                <p> Описание : @hero.decs</p>
+                <p>Атрибут :@hero.Atribute.AtributeName</p>
+                <p><a class="btn btn-warning" href="~/Heroes/@hero.Name" >Подробнее</a></p>
+            </div>
+        }
+    }
+
+</div>
+
+
