@@ -80,6 +80,11 @@ namespace ASPProject.Controllers
             }
             return View(model);
         }
+        public async Task<IActionResult> Logout()
+        {
+            await HttpContext.SignOutAsync();
+            return RedirectToAction("List", "Heroes");
+        }
         private async Task Authenticate(User user)
         {
             // создаем один claim

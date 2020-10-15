@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using ASPProject.Data.Interfaces;
 using ASPProject.Data.Models;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -24,17 +25,18 @@ namespace ASPProject.Controllers
         public SettingsController(HeroesContext heroesContext, IAllHeroes iAllHeroes, IHeroesAtribute iHeroesAtribute, IWebHostEnvironment appEnvironment)
         {
             _heroesContext = heroesContext;
+            _appEnvironment = appEnvironment;
             AllHeroes = iAllHeroes;
             HeroesAtribute = iHeroesAtribute;
-            _appEnvironment = appEnvironment;
         }
+
         [HttpGet]
         public IActionResult Add()
         {
             return View();
         }
         [HttpPost]
-        public async Task<string> AddAsync(string name, string decs, string AtributeName, IFormFile uploadedFile)
+        public async Task<IActionResult> AddAsync(string name, string decs, string AtributeName, IFormFile uploadedFile)
         {
             if (uploadedFile != null)
             {
@@ -51,7 +53,7 @@ namespace ASPProject.Controllers
             }
 
             await _heroesContext.SaveChangesAsync();
-            return name;
+            return RedirectToAction("List", "Heroes");
         }
         [HttpGet]
 
@@ -60,12 +62,12 @@ namespace ASPProject.Controllers
             return View();
         }
         [HttpPost]
-        public string Delete(String name)
+        public IActionResult Delete(string name)
         {
-            Hero hero = _heroesContext.Heroes.FirstOrDefault(x => x.Name == name);
+            var hero = _heroesContext.Heroes.FirstOrDefault(x => x.Name == name);
             _heroesContext.Heroes.Remove(hero);
             _heroesContext.SaveChanges();
-            return $"Успешно удален герой {name}";
+            return RedirectToAction("List", "Heroes");
 
         }
         [HttpGet]
@@ -75,20 +77,31 @@ namespace ASPProject.Controllers
             return View();
         }
         [HttpPost]
-        public string Alter(String fname, String name, string decs, string AtributeName, string img = null)
+        public async Task<IActionResult> LogOut()
+        {
+            await HttpContext.SignOutAsync();
+            return RedirectToAction("List", "Heroes");
+        }
+
+        [HttpPost]
+        public IActionResult Alter(string fname, string name, string decs, string atributeName, string img = null)
         {
 
-            Hero hero = _heroesContext.Heroes.Where(x => x.Name == fname).FirstOrDefault();
+            var hero = _heroesContext.Heroes.FirstOrDefault(x => x.Name == fname);
             if (name != null)
-                hero.Name = name;
+                if (hero != null)
+                    hero.Name = name;
             if (decs != null)
-               hero.decs = decs;
-            if (AtributeName!= null)
-                hero.Atribute= _heroesContext.Atribute.First(x => x.AtributeName == AtributeName);
+                if (hero != null)
+                    hero.decs = decs;
+            if (atributeName!= null)
+                if (hero != null)
+                    hero.Atribute = _heroesContext.Atribute.First(x => x.AtributeName == atributeName);
             if (img != null)
-                hero.img = img;
-                _heroesContext.SaveChanges();
-            return name;
+                if (hero != null)
+                    hero.img = img;
+            _heroesContext.SaveChanges();
+                return RedirectToAction("List", "Heroes");
 
         }
 
