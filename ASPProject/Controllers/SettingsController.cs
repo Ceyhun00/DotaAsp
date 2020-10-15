@@ -1,10 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using ASPProject.Data.Interfaces;
 using ASPProject.Data.Models;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ASPProject.Controllers
@@ -13,15 +16,17 @@ namespace ASPProject.Controllers
 
     public class SettingsController : Controller
     {
-        public IAllHeroes _AllHeroes;
-        public IHeroesAtribute _HeroesAtribute;
+        public IAllHeroes AllHeroes;
+        public IHeroesAtribute HeroesAtribute;
+        IWebHostEnvironment _appEnvironment;
 
         public readonly HeroesContext _heroesContext;
-        public SettingsController(HeroesContext heroesContext, IAllHeroes iAllHeroes, IHeroesAtribute iHeroesAtribute)
+        public SettingsController(HeroesContext heroesContext, IAllHeroes iAllHeroes, IHeroesAtribute iHeroesAtribute, IWebHostEnvironment appEnvironment)
         {
             _heroesContext = heroesContext;
-            _AllHeroes = iAllHeroes;
-            _HeroesAtribute = iHeroesAtribute;
+            AllHeroes = iAllHeroes;
+            HeroesAtribute = iHeroesAtribute;
+            _appEnvironment = appEnvironment;
         }
         [HttpGet]
         public IActionResult Add()
@@ -29,10 +34,23 @@ namespace ASPProject.Controllers
             return View();
         }
         [HttpPost]
-        public string Add(String name, string decs, string AtributeName, string img = null)
+        public async Task<string> AddAsync(string name, string decs, string AtributeName, IFormFile uploadedFile)
         {
-            _heroesContext.Heroes.Add(new Hero { Name = name, decs = decs, img = img, Atribute = _heroesContext.Atribute.First(x => x.AtributeName == AtributeName) });
-            _heroesContext.SaveChanges();
+            if (uploadedFile != null)
+            {
+                await using (var fileStream = new FileStream(_appEnvironment.WebRootPath+"/img/" + uploadedFile.FileName, FileMode.Create))
+                {
+                    await uploadedFile.CopyToAsync(fileStream);
+                }
+
+                await _heroesContext.Heroes.AddAsync(new Hero
+                {
+                    Name = name, decs = decs, img = "/img/" + uploadedFile.FileName,
+                    Atribute = _heroesContext.Atribute.First(x => x.AtributeName == AtributeName)
+                });
+            }
+
+            await _heroesContext.SaveChangesAsync();
             return name;
         }
         [HttpGet]
@@ -42,9 +60,9 @@ namespace ASPProject.Controllers
             return View();
         }
         [HttpPost]
-        public string Delete(String name )
+        public string Delete(String name)
         {
-            Hero hero = _heroesContext.Heroes.Where(x => x.Name == name).FirstOrDefault();
+            Hero hero = _heroesContext.Heroes.FirstOrDefault(x => x.Name == name);
             _heroesContext.Heroes.Remove(hero);
             _heroesContext.SaveChanges();
             return $"Успешно удален герой {name}";
@@ -75,5 +93,6 @@ namespace ASPProject.Controllers
         }
 
 
+       
     }
 }

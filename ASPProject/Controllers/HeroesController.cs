@@ -14,13 +14,13 @@ namespace ASPProject.Controllers
 
     public class HeroesController : Controller
     {
-        public IAllHeroes _AllHeroes;
-        public IHeroesAtribute _HeroesAtribute;
+        public IAllHeroes AllHeroes;
+        public IHeroesAtribute HeroesAtribute;
 
-        public readonly HeroesContext _heroesContext;
+        public readonly HeroesContext HeroesContext;
         public HeroesController(HeroesContext heroesContext)
         {
-            _heroesContext = heroesContext;
+            HeroesContext = heroesContext;
           
         }
 
@@ -28,9 +28,8 @@ namespace ASPProject.Controllers
         {
 
             ViewBag.Title = "Все герои";
-            HeroesListViewModel obj = new HeroesListViewModel();
-            obj.Heroes = _heroesContext.Heroes;
-            var a = _heroesContext.Heroes.Include(x => x.Atribute).ToList();
+            var obj = new HeroesListViewModel {Heroes = HeroesContext.Heroes};
+            var a = HeroesContext.Heroes.Include(x => x.Atribute).ToList();
             obj.caterory = "Герои Dota2";
             return View(obj);
         }
@@ -38,14 +37,14 @@ namespace ASPProject.Controllers
 
         public ViewResult Io()
         {
-            DescriptionViewModel obj = new DescriptionViewModel();
-            var a = _heroesContext.Heroes.Include(x=>x.Atribute).First(x => x.Name == "Io");
+            var obj = new DescriptionViewModel();
+            var a = HeroesContext.Heroes.Include(x=>x.Atribute).First(x => x.Name == "Io");
             return View(a);
         }
            public ViewResult Slark()
         {
-            DescriptionViewModel obj = new DescriptionViewModel();
-            var a = _heroesContext.Heroes.First(x => x.Name == "Slark");
+            var obj = new DescriptionViewModel();
+            var a = HeroesContext.Heroes.First(x => x.Name == "Slark");
             return View(a);
         }
 

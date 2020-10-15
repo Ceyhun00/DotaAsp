@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace ASPProject.Data.Models
 {
-    public class HeroesContext : DbContext
+    public sealed class HeroesContext : DbContext
     {
         public DbSet<Role> Roles { get; set; }
         public DbSet<User> Users { get; set; }
